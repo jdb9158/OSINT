@@ -44,6 +44,26 @@ class SocialShield:
             print("Invalid choice. Please enter 1, 2, or 3.")
             return self.choose_platform()
 
+    def login(self, username, password):
+        try:
+            self.loader.login(username, password)
+            print("Logged in successfully.")
+        except instaloader.TwoFactorAuthRequiredException:
+            # Two-factor authentication required
+            try:
+                code = input("Enter the 6-digit 2FA code: ")
+                self.loader.two_factor_login(code)
+                print("Logged in successfully with 2FA.")
+            except instaloader.exceptions.BadCredentialsException:
+                print("Invalid 2FA code. Please try again.")
+            except Exception as e:
+                print(f"An error occurred during 2FA login: {e}")
+        except instaloader.exceptions.BadCredentialsException:
+            print("Bad credentials. Please check your username and password.")
+        except Exception as e:
+            print(f"An error occurred during login: {e}")
+
+
     def extract_exif(self, file_path):
         try:
             image = Image.open(file_path)
@@ -110,47 +130,6 @@ class SocialShield:
                 "value": profile.biography[result.start:result.end]
             })
 
-        # # Check for geotagged posts
-        # for post in profile.get_posts():
-        #     if post.location:
-        #         report["geotagged_posts"].append({
-        #             "post_url": post.url,
-        #             "location": post.location.name
-        #         })
-
-        # # Detect PII using Presidio Analyzer
-        # analysis_results = self.analyzer.analyze(text=profile.biography, language='en')
-        # for result in analysis_results:
-        #     report["detected_pii"].append({
-        #         "type": result.entity_type,
-        #         "value": profile.biography[result.start:result.end]
-        #     })
-
-        # # Iterate over each post
-        # for post in profile.get_posts():
-        
-        # # Download the image associated with the post
-        #     self.loader.download_post(post, target=profile.username)
-
-        # # Check if the post has a location tag
-        # if post.location:
-        #     report["geotagged_posts"].append({
-        #         "post_url": post.url,
-        #         "location": post.location.name
-        #     })
-
-        # # Analyze images for EXIF data
-        # post_dir = os.path.join(os.getcwd(), profile.username, post.shortcode)
-        # if os.path.isdir(post_dir):
-        #     for file in os.listdir(post_dir):
-        #         file_path = os.path.join(post_dir, file)
-        #         exif_data = self.extract_exif(file_path)
-        #         if exif_data:
-        #             report["geotagged_posts"].append({
-        #                 "post_url": file_path,
-        #                 "location": self.gmaps(exif_data)
-        #             })
-
         # Download and analyze images for EXIF data
         self.loader.download_profile(username, profile_pic_only=False)
         profile_dir = os.path.join(os.getcwd(), username)
@@ -215,6 +194,15 @@ class SocialShield:
 # Usage example
 if __name__ == "__main__":
     social_shield = SocialShield()
+    
+    # Prompt for Instagram credentials
+    ig_username = input("Enter your Instagram username: ")
+    ig_password = input("Enter your Instagram password: ")
+
+    # Perform login
+    social_shield.login(ig_username, ig_password)
+
+    # Scan profiles
     usernames = ["justin.saneee"]
     reports = social_shield.scan_profiles(usernames)
 
