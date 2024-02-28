@@ -21,6 +21,7 @@ from presidio_analyzer import AnalyzerEngine
 from PIL import Image
 from PIL.ExifTags import GPSTAGS, TAGS
 
+# Only Instagram functionality as of right now
 class SocialShield:
     def __init__(self):
         self.loader = instaloader.Instaloader()
@@ -195,16 +196,40 @@ class SocialShield:
 if __name__ == "__main__":
     social_shield = SocialShield()
     
-    # Prompt for Instagram credentials
-    ig_username = input("Enter your Instagram username: ")
-    ig_password = input("Enter your Instagram password: ")
+    chosen_platform = social_shield.choose_platform()
 
-    # Perform login
-    social_shield.login(ig_username, ig_password)
+    if chosen_platform == 'Instagram':
+        # Instagram Functionality
+        # Prompt for Instagram credentials
+        ig_username = input("Enter your Instagram username: ")
+        ig_password = input("Enter your Instagram password: ")
 
-    # Scan profiles
-    usernames = ["justin.saneee"]
-    reports = social_shield.scan_profiles(usernames)
+        # Perform login
+        social_shield.login(ig_username, ig_password)
 
-    for report in reports:
-        print(report)
+        # Enter the usernames of the Instagram profiles to be analyzed
+        target_usernames = input("Enter the usernames of the Instagram profiles to analyze (separated by a comma): ")
+        usernames_list = target_usernames.split(',')
+
+        # Scan profiles and generate reports
+        reports = social_shield.scan_profiles(usernames_list)
+
+        # Display the analysis reports
+        for report in reports:
+            print("Analysis Report for:", report['username'])
+
+            # Display geotagged posts
+            print("\nGeotagged Posts:")
+            for post in report['geotagged_posts']:
+                print(" - Post URL:", post['post_url'])
+                if 'location' in post:
+                    print(" - Location:", post['location'])
+
+            # Display detected PII
+            print("\nDetected PII in Biography:")
+            for pii in report['detected_pii']:
+                print(" - Type:", pii['type'])
+                print(" - Value:", pii['value'])
+            print("\n")
+
+            print(report)
