@@ -8,7 +8,6 @@
 
 Social Media Vulnerability Scanner
 
-Justin Balroop
 """
 
 # Add 'help' command to list all available commands, followed by a description of each command
@@ -18,14 +17,14 @@ import os
 import sys
 import time
 import instaloader
-from pii_codex import PiiCodex
+from presidio_analyzer import AnalyzerEngine
 from PIL import Image
 from PIL.ExifTags import GPSTAGS, TAGS
 
 class SocialShield:
     def __init__(self):
         self.loader = instaloader.Instaloader()
-        self.pii_codex = PiiCodex()
+        self.analyzer = AnalyzerEngine()
 
     def choose_platform(self):
         print("Choose a social media platform to scan:")
@@ -80,21 +79,77 @@ class SocialShield:
             "detected_pii": []
         }
 
-        # Check for geotagged posts
         for post in profile.get_posts():
+            # Download the image associated with the post
+            self.loader.download_post(post, target=profile.username)
+
+            # Check if the post has a location tag
             if post.location:
                 report["geotagged_posts"].append({
                     "post_url": post.url,
                     "location": post.location.name
                 })
 
-        # Detect PII using PII Codex
-        pii_results = self.pii_codex.find_pii(text=profile.biography)
-        for pii in pii_results:
+            # Analyze images for EXIF data
+            post_dir = os.path.join(os.getcwd(), profile.username, post.shortcode)
+            if os.path.isdir(post_dir):
+                for file in os.listdir(post_dir):
+                    file_path = os.path.join(post_dir, file)
+                    exif_data = self.extract_exif(file_path)
+                    if exif_data:
+                        report["geotagged_posts"].append({
+                            "post_url": file_path,
+                            "location": self.gmaps(exif_data)
+                        })
+
+        # Detect PII using Presidio Analyzer
+        analysis_results = self.analyzer.analyze(text=profile.biography, language='en')
+        for result in analysis_results:
             report["detected_pii"].append({
-                "type": pii['type'],
-                "value": pii['match']
+                "type": result.entity_type,
+                "value": profile.biography[result.start:result.end]
             })
+
+        # # Check for geotagged posts
+        # for post in profile.get_posts():
+        #     if post.location:
+        #         report["geotagged_posts"].append({
+        #             "post_url": post.url,
+        #             "location": post.location.name
+        #         })
+
+        # # Detect PII using Presidio Analyzer
+        # analysis_results = self.analyzer.analyze(text=profile.biography, language='en')
+        # for result in analysis_results:
+        #     report["detected_pii"].append({
+        #         "type": result.entity_type,
+        #         "value": profile.biography[result.start:result.end]
+        #     })
+
+        # # Iterate over each post
+        # for post in profile.get_posts():
+        
+        # # Download the image associated with the post
+        #     self.loader.download_post(post, target=profile.username)
+
+        # # Check if the post has a location tag
+        # if post.location:
+        #     report["geotagged_posts"].append({
+        #         "post_url": post.url,
+        #         "location": post.location.name
+        #     })
+
+        # # Analyze images for EXIF data
+        # post_dir = os.path.join(os.getcwd(), profile.username, post.shortcode)
+        # if os.path.isdir(post_dir):
+        #     for file in os.listdir(post_dir):
+        #         file_path = os.path.join(post_dir, file)
+        #         exif_data = self.extract_exif(file_path)
+        #         if exif_data:
+        #             report["geotagged_posts"].append({
+        #                 "post_url": file_path,
+        #                 "location": self.gmaps(exif_data)
+        #             })
 
         # Download and analyze images for EXIF data
         self.loader.download_profile(username, profile_pic_only=False)
@@ -160,7 +215,7 @@ class SocialShield:
 # Usage example
 if __name__ == "__main__":
     social_shield = SocialShield()
-    usernames = ["exampleuser1", "exampleuser2"]  # Replace with target usernames
+    usernames = ["justin.saneee"]
     reports = social_shield.scan_profiles(usernames)
 
     for report in reports:
