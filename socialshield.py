@@ -100,49 +100,55 @@ class SocialShield:
             "detected_pii": []
         }
 
-        for post in profile.get_posts():
-            # Download the image associated with the post
-            self.loader.download_post(post, target=profile.username)
+        try:
+            for post in profile.get_posts():
+                # Download the image associated with the post
+                self.loader.download_post(post, target=profile.username)
 
-            # Check if the post has a location tag
-            if post.location:
-                report["geotagged_posts"].append({
-                    "post_url": post.url,
-                    "location": post.location.name
+                # Check if the post has a location tag
+                if post.location:
+                    report["geotagged_posts"].append({
+                        "post_url": post.url,
+                        "location": post.location.name
+                    })
+
+                # Analyze images for EXIF data
+                post_dir = os.path.join(os.getcwd(), profile.username, post.shortcode)
+                if os.path.isdir(post_dir):
+                    for file in os.listdir(post_dir):
+                        file_path = os.path.join(post_dir, file)
+                        exif_data = self.extract_exif(file_path)
+                        if exif_data:
+                            report["geotagged_posts"].append({
+                                "post_url": file_path,
+                                "location": self.gmaps(exif_data)
+                            })
+
+            # Detect PII using Presidio Analyzer
+            analysis_results = self.analyzer.analyze(text=profile.biography, language='en')
+            for result in analysis_results:
+                report["detected_pii"].append({
+                    "type": result.entity_type,
+                    "value": profile.biography[result.start:result.end]
                 })
 
-            # Analyze images for EXIF data
-            post_dir = os.path.join(os.getcwd(), profile.username, post.shortcode)
-            if os.path.isdir(post_dir):
-                for file in os.listdir(post_dir):
-                    file_path = os.path.join(post_dir, file)
-                    exif_data = self.extract_exif(file_path)
-                    if exif_data:
-                        report["geotagged_posts"].append({
-                            "post_url": file_path,
-                            "location": self.gmaps(exif_data)
-                        })
+            # Download and analyze images for EXIF data
+            self.loader.download_profile(username, profile_pic_only=False)
+            profile_dir = os.path.join(os.getcwd(), username)
+            for file in os.listdir(profile_dir):
+                file_path = os.path.join(profile_dir, file)
+                exif_data = self.extract_exif(file_path)
+                if exif_data:
+                    report["geotagged_posts"].append({
+                        "post_url": file_path,
+                        "location": self.gmaps(exif_data)
+                    })
 
-        # Detect PII using Presidio Analyzer
-        analysis_results = self.analyzer.analyze(text=profile.biography, language='en')
-        for result in analysis_results:
-            report["detected_pii"].append({
-                "type": result.entity_type,
-                "value": profile.biography[result.start:result.end]
-            })
-
-        # Download and analyze images for EXIF data
-        self.loader.download_profile(username, profile_pic_only=False)
-        profile_dir = os.path.join(os.getcwd(), username)
-        for file in os.listdir(profile_dir):
-            file_path = os.path.join(profile_dir, file)
-            exif_data = self.extract_exif(file_path)
-            if exif_data:
-                report["geotagged_posts"].append({
-                    "post_url": file_path,
-                    "location": self.gmaps(exif_data)
-                })
-
+        except Exception as e:
+            print(f"Error analyzing profile {username}: {e}")
+            return {"username": username, "geotagged_posts": [], "detected_pii": []} 
+            # return an empty report for this profile
+        
         return report
 
     def convert_deci(degree, minutes, seconds, direction):
