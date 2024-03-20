@@ -14,8 +14,11 @@ Social Media Vulnerability Scanner
 # 
 
 import os
+import lzma
 import sys
 import time
+import json
+import argparse
 import instaloader
 from presidio_analyzer import AnalyzerEngine
 from PIL import Image
@@ -63,7 +66,6 @@ class SocialShield:
             print("Bad credentials. Please check your username and password.")
         except Exception as e:
             print(f"An error occurred during login: {e}")
-
 
     def extract_exif(self, file_path):
         try:
@@ -151,6 +153,29 @@ class SocialShield:
         
         return report
 
+    def print_post_details(json_file_path):
+        try:
+            # Open and load the JSON file
+            with open(json_file_path, 'r') as file:
+                post_data = json.load(file)
+            
+            # Extract the desired information
+            full_name = post_data.get('node', {}).get('owner', {}).get('full_name', 'N/A')
+            username = post_data.get('node', {}).get('owner', {}).get('username', 'N/A')
+            is_private = post_data.get('node', {}).get('owner', {}).get('is_private', 'N/A')
+            
+            # Print the information
+            print("Post Details:")
+            print(f"Full Name: {full_name}")
+            print(f"Username: {username}")
+            print(f"Is Private: {is_private}")
+        except FileNotFoundError:
+            print("File not found. Please check the file path.")
+        except json.JSONDecodeError:
+            print("Error decoding JSON. Please check the file content.")
+        except Exception as e:
+            print(f"An unexpected error occurred: {e}")
+
     def convert_deci(degree, minutes, seconds, direction):
         """
         Convert GPS coordinates to decimal degrees.
@@ -198,11 +223,29 @@ class SocialShield:
                 print(f"Error processing {username}: {e}")
         return reports
 
+    def extract_xz_file(xz_file_path, output_path):
+        with lzma.open(xz_file_path) as file:
+            file_content = file.read()
+            with open(output_path, 'wb') as output_file:
+                output_file.write(file_content)
+
 # Usage example
 if __name__ == "__main__":
     social_shield = SocialShield()
     
     chosen_platform = social_shield.choose_platform()
+
+    # # Create the parser
+    # parser = argparse.ArgumentParser(description="Extract and print information from an Instagram post JSON file.")
+    
+    # # Add an argument for specifying the JSON file path
+    # parser.add_argument('-f', '--file', type=str, required=True, help="Path to the Instagram post JSON file.")
+    
+    # # Parse the command-line arguments
+    # args = parser.parse_args()
+    
+    # # Call the function to print post details using the provided JSON file path
+    # print_post_details(args.file)
 
     if chosen_platform == 'Instagram':
         # Instagram Functionality
@@ -219,6 +262,33 @@ if __name__ == "__main__":
 
         # Scan profiles and generate reports
         reports = social_shield.scan_profiles(usernames_list)
+
+        # Create the parser
+        parser = argparse.ArgumentParser(description="Extract information from an Instagram post JSON file, optionally extracting it from an .xz archive first.")
+        
+        # Add an argument for the JSON file path
+        parser.add_argument('-f', '--file', type=str, help="Path to the Instagram post JSON file.")
+        
+        # Add an argument for the .xz file path
+        parser.add_argument('-x', '--extract', type=str, help="Path to the .xz file to extract.")
+
+        # Parse the command-line arguments
+        args = parser.parse_args()
+        
+        if args.extract:
+            # Extract the .xz file to the same directory with a .json extension
+            output_path = os.path.splitext(args.extract)[0] + ".json"
+            extract_xz_file(args.extract, output_path)
+            print(f"Extracted to {output_path}")
+            
+            # Update the JSON file path argument to use the extracted file
+            args.file = output_path
+
+        if args.file:
+            # Call the function to print post details using the provided JSON file path
+            print_post_details(args.file)
+        else:
+            print("Please specify a file to process with -f or an .xz file to extract with -x.")
 
         # Display the analysis reports
         for report in reports:
@@ -239,3 +309,5 @@ if __name__ == "__main__":
             print("\n")
 
             print(report)
+
+    # if chosen_platform == 'Snapchat':
