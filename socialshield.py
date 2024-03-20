@@ -32,8 +32,8 @@ class SocialShield:
 
     def choose_platform(self):
         print("Choose a social media platform to scan:")
-        print("1: Instagram\n2: Snapchat\n3: LinkedIn")
-        choice = input("Enter your choice (1, 2, or 3): ")
+        print("1: Instagram\n2: Snapchat\n")
+        choice = input("Enter your choice (1 or 2): ")
         
         if choice == '1':
             self.loader = instaloader.Instaloader()
@@ -45,7 +45,7 @@ class SocialShield:
             # Initialize LinkedIn scraping setup here (if available)
             return 'LinkedIn'
         else:
-            print("Invalid choice. Please enter 1, 2, or 3.")
+            print("Invalid choice. Please enter 1 or 2.")
             return self.choose_platform()
 
     def login(self, username, password):
