@@ -19,6 +19,7 @@ import sys
 import time
 import json
 import argparse
+import subprocess
 import instaloader
 from presidio_analyzer import AnalyzerEngine
 from PIL import Image
@@ -229,6 +230,39 @@ class SocialShield:
             with open(output_path, 'wb') as output_file:
                 output_file.write(file_content)
 
+    def analyze_snapchat(self, username):
+        snapintel_script = './SnapIntel/main.py'
+
+        # Example: Show stats and list all elements for a specific user
+        command_stats = ['python3', snapintel_script, '-u', username, '-s']
+        command_list_all = ['python3', snapintel_script, '-u', username, '-l', 'a']
+        
+        # You can add more commands based on the functionalities you wish to use
+        
+        try:
+            # Execute the command to show stats
+            print(f"Getting stats for {username}:")
+            result_stats = subprocess.run(command_stats, capture_output=True, text=True)
+            if result_stats.returncode == 0:
+                print(result_stats.stdout)
+            else:
+                print(f"Error fetching stats: {result_stats.stderr}")
+                
+            # Execute the command to list all elements
+            print(f"Listing all elements for {username}:")
+            result_list_all = subprocess.run(command_list_all, capture_output=True, text=True)
+            if result_list_all.returncode == 0:
+                print(result_list_all.stdout)
+            else:
+                print(f"Error listing elements: {result_list_all.stderr}")
+                
+            # Add more functionalities as needed, following the same pattern
+            
+        except Exception as e:
+            print(f"Error running SnapIntel for {username}: {e}")
+
+
+
 # Usage example
 if __name__ == "__main__":
     social_shield = SocialShield()
@@ -309,5 +343,7 @@ if __name__ == "__main__":
             print("\n")
 
             print(report)
-
-    # if chosen_platform == 'Snapchat':
+        pass
+    elif chosen_platform == 'Snapchat':
+        snapchat_username = input("Enter your Snapchat username to analyze: ")
+        social_shield.analyze_snapchat(snapchat_username)
