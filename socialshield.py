@@ -231,11 +231,14 @@ class SocialShield:
                 output_file.write(file_content)
 
     def analyze_snapchat(self, username):
-        snapintel_script = './SnapIntel/main.py'
+        snapintel_dir = './SnapIntel'
+        os.chdir(snapintel_dir)
+
+        snapintel_script = 'python3 main.py'
 
         # Example: Show stats and list all elements for a specific user
-        command_stats = ['python3', snapintel_script, '-u', username, '-s']
-        command_list_all = ['python3', snapintel_script, '-u', username, '-l', 'a']
+        command_stats = [snapintel_script, '-u', username, '-s']
+        command_list_all = [snapintel_script, '-u', username, '-l', 'a']
         
         # You can add more commands based on the functionalities you wish to use
         
