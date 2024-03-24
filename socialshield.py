@@ -42,9 +42,6 @@ class SocialShield:
         elif choice == '2':
             # Initialize Snapchat scraping setup here (if available)
             return 'Snapchat'
-        elif choice == '3':
-            # Initialize LinkedIn scraping setup here (if available)
-            return 'LinkedIn'
         else:
             print("Invalid choice. Please enter 1 or 2.")
             return self.choose_platform()
@@ -231,39 +228,38 @@ class SocialShield:
                 output_file.write(file_content)
 
     def analyze_snapchat(self, username):
-        snapintel_dir = './SnapIntel'
-        os.chdir(snapintel_dir)
-
-        snapintel_script = 'python3 main.py'
-
-        # Example: Show stats and list all elements for a specific user
-        command_stats = [snapintel_script, '-u', username, '-s']
-        command_list_all = [snapintel_script, '-u', username, '-l', 'a']
+        # Absolute path to the SnapIntel directory
+        snapintel_dir = r'C:\Users\Admin\Documents\RIT\5th Year 2023-24\Grad Capstone\SocialShield\SnapIntel'
         
-        # You can add more commands based on the functionalities you wish to use
+        # Path to the SnapIntel main.py script
+        snapintel_script = os.path.join(snapintel_dir, 'main.py')
+
+        # Save the current working directory
+        original_cwd = os.getcwd()
         
         try:
-            # Execute the command to show stats
-            print(f"Getting stats for {username}:")
-            result_stats = subprocess.run(command_stats, capture_output=True, text=True)
-            if result_stats.returncode == 0:
-                print(result_stats.stdout)
-            else:
-                print(f"Error fetching stats: {result_stats.stderr}")
-                
-            # Execute the command to list all elements
-            print(f"Listing all elements for {username}:")
-            result_list_all = subprocess.run(command_list_all, capture_output=True, text=True)
-            if result_list_all.returncode == 0:
-                print(result_list_all.stdout)
-            else:
-                print(f"Error listing elements: {result_list_all.stderr}")
-                
-            # Add more functionalities as needed, following the same pattern
+            # Change the working directory to the SnapIntel directory
+            os.chdir(snapintel_dir)
+
+            # Construct the command to run SnapIntel
+            command_stats = ['python', snapintel_script, '-u', username, '-s']
+            # Run the command
+            result = subprocess.run(command_stats, capture_output=True, text=True, check=True)
             
+            # Check if SnapIntel executed successfully
+            if result.returncode == 0:
+                print(f"SnapIntel executed successfully for username: {username}")
+                print(result.stdout)
+            else:
+                print(f"SnapIntel encountered an error: {result.stderr}")
+                
+        except subprocess.CalledProcessError as e:
+            print(f"Error running SnapIntel for {username}: {e.stderr}")
         except Exception as e:
             print(f"Error running SnapIntel for {username}: {e}")
-
+        finally:
+            # Change back to the original working directory
+            os.chdir(original_cwd)
 
 
 # Usage example
