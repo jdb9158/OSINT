@@ -228,25 +228,28 @@ class SocialShield:
                 output_file.write(file_content)
 
     def analyze_snapchat(self, username):
-        # Absolute path to the SnapIntel directory
-        snapintel_dir = r'C:\Users\Admin\Documents\RIT\5th Year 2023-24\Grad Capstone\SocialShield\SnapIntel'
+        # Get the directory of the currently running script
+        current_script_dir = os.path.dirname(os.path.realpath(__file__))
         
-        # Path to the SnapIntel main.py script
+        # Construct the relative path to the SnapIntel directory
+        snapintel_dir = os.path.join(current_script_dir, 'SnapIntel')
+        
+        # Ensure the path to SnapIntel's main.py is relative to the current script's location
         snapintel_script = os.path.join(snapintel_dir, 'main.py')
 
-        # Save the current working directory
-        original_cwd = os.getcwd()
-        
         try:
+            # Save the current working directory
+            original_cwd = os.getcwd()
+
             # Change the working directory to the SnapIntel directory
             os.chdir(snapintel_dir)
 
             # Construct the command to run SnapIntel
             command_stats = ['python', snapintel_script, '-u', username, '-s']
-            # Run the command
+            # Execute the command
             result = subprocess.run(command_stats, capture_output=True, text=True, check=True)
             
-            # Check if SnapIntel executed successfully
+            # Process the result as needed
             if result.returncode == 0:
                 print(f"SnapIntel executed successfully for username: {username}")
                 print(result.stdout)
