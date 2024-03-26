@@ -174,39 +174,6 @@ class SocialShield:
         except Exception as e:
             print(f"An unexpected error occurred: {e}")
 
-    def convert_deci(degree, minutes, seconds, direction):
-        """
-        Convert GPS coordinates to decimal degrees.
-
-        :param degree: Degree part of the coordinate.
-        :param minutes: Minutes part of the coordinate.
-        :param seconds: Seconds part of the coordinate.
-        :param direction: Direction indicator ('N', 'S', 'E', 'W').
-        :return: Decimal degree representation of the coordinate.
-        """
-        decimal_degrees = degree + minutes / 60 + seconds / 3600
-        if direction == "S" or direction == "W":
-            decimal_degrees *= -1
-        return decimal_degrees
-    
-    def gmaps(self, gps_records):
-        """
-        Generate a Google Maps URL from GPS coordinates.
-
-        :param gps_coords: A dictionary containing the GPS coordinates.
-                        Expected keys are 'lat', 'lon', 'lat_ref', and 'lon_ref'.
-        :return: A string URL for Google Maps.
-        """
-        dec_lat = convert_deci(float(gps_coords["lat"][0]),  
-                            float(gps_coords["lat"][1]), 
-                            float(gps_coords["lat"][2]), 
-                            gps_coords["lat_ref"])
-        dec_lon = convert_deci(float(gps_coords["lon"][0]),  
-                            float(gps_coords["lon"][1]), 
-                            float(gps_coords["lon"][2]), 
-                            gps_coords["lon_ref"])
-        return f"https://maps.google.com/?q={dec_lat},{dec_lon}"
-
     def scan_profiles(self, usernames):
         reports = []
         for username in usernames:
