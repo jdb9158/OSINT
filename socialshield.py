@@ -130,7 +130,9 @@ class SocialShield:
         
         # Ensure the path to SnapIntel's main.py is relative to the current script's location
         snapintel_script = os.path.join(snapintel_dir, 'main.py')
-
+        # Construct the command to run SnapIntel
+        command_stats = ['python3', snapintel_script, '-u', username, '-l', 'us']
+        
         try:
             # Save the current working directory
             original_cwd = os.getcwd()
@@ -138,25 +140,42 @@ class SocialShield:
             # Change the working directory to the SnapIntel directory
             os.chdir(snapintel_dir)
 
-            # Construct the command to run SnapIntel
-            command_stats = ['python', snapintel_script, '-u', username, '-s']
+            
             # Execute the command
             result = subprocess.run(command_stats, capture_output=True, text=True, check=True)
-            
-            # Process the result as needed
             if result.returncode == 0:
                 print(f"SnapIntel executed successfully for username: {username}")
                 print(result.stdout)
             else:
-                print(f"SnapIntel encountered an error: {result.stderr}")
-                
+                print(f"SnapIntel encountered an error for username: {username}")
+                print(result.stderr)
         except subprocess.CalledProcessError as e:
             print(f"Error running SnapIntel for {username}: {e.stderr}")
         except Exception as e:
-            print(f"Error running SnapIntel for {username}: {e}")
+            print(f"Unexpected error running SnapIntel for {username}: {e}")
         finally:
             # Change back to the original working directory
             os.chdir(original_cwd)
+        self.print_privacy_tips()
+
+    def print_privacy_tips(self):
+        print("\n[Privacy Tips for Snapchat Users]\n")
+        
+        tips = [
+            "Avoid sharing your full name or initials in your Snapchat username or display name. This can make it harder for unwanted parties to identify or track you.",
+            "Be cautious about listing your birthday, especially the year. Sharing your age can increase the risk of identity theft or other forms of social engineering.",
+            "Consider keeping your account private. A public account can expose your snaps and stories to a broader audience than intended, increasing your digital footprint.",
+            "Be mindful of the background in your snaps. Unintentionally captured details (like street signs, house numbers, or identifiable landmarks) can reveal your location.",
+            "Regularly review your friend list and privacy settings. Snapchat updates its features and settings, so it's a good practice to ensure your privacy preferences are up-to-date.",
+            "Think twice before sharing snaps that could reveal routines or habits. Information about your daily activities can be pieced together over time to predict your movements.",
+            "Use the blocking and reporting features to manage who can see your content and interact with you. Snapchat allows you to block users who you do not wish to share information with or who behave inappropriately.",
+            "Educate yourself on the latest social engineering tactics. Scammers and hackers often use social media to gather personal information for fraudulent purposes."
+        ]
+        
+        for tip in tips:
+            print(f"• {tip}\n")
+        
+        print("Remember, the key to maintaining privacy on social media is to share wisely. It's not just about what you share, but also who you share it with. Stay safe! :)")
 
 
 # Usage example
