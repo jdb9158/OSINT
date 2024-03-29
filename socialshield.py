@@ -10,13 +10,9 @@ Social Media Vulnerability Scanner
 
 """
 
-# Add 'help' command to list all available commands, followed by a description of each command
-# 
-
 import os
 import lzma
 import json
-import argparse
 import subprocess
 #import exiftool
 import instaloader
@@ -27,7 +23,7 @@ class SocialShield:
         self.loader = instaloader.Instaloader()
 
     def choose_platform(self):
-        print("Choose a social media platform to scan:")
+        print("Please choose a social media platform to scan:")
         print("1: Instagram\n2: Snapchat\n")
         choice = input("Enter your choice (1 or 2): ")
         
@@ -60,37 +56,66 @@ class SocialShield:
         except Exception as e:
             print(f"An error occurred during login: {e}")
 
-
     def analyze_profile(self, username):
         profile = instaloader.Profile.from_username(self.loader.context, username)
 
-        # Ensure the directory for the profile exists
+        self.loader.download_profile(username, profile_pic_only=False)
+
         profile_dir = os.path.join(username)
-        if not os.path.exists(profile_dir):
-            os.makedirs(profile_dir)
+        
+        # Iterate over files in the profile directory
+        for root, dirs, files in os.walk(profile_dir):
+            for file in files:
+                if file.endswith(".xz"):
+                    xz_file_path = os.path.join(root, file)
+                    json_file_path = xz_file_path[:-3]  # Assuming the extension is .json.xz
+                    self.extract_xz_file(xz_file_path, json_file_path)
 
-        for post in profile.get_posts():
-            # Download the post
-            self.loader.download_post(post, target=username)
+        # Initialize an empty list to hold possible connections/associates
+        # connections = []
 
-            # Construct path to the directory where the post is saved
-            post_dir = os.path.join(username, post.shortcode)
-            if os.path.isdir(post_dir):
-                for file in os.listdir(post_dir):
-                    if file.endswith('.xz'):
-                        xz_file_path = os.path.join(post_dir, file)
-                        json_file_path = xz_file_path[:-3] + ".json"
-                        self.extract_xz_file(xz_file_path, json_file_path)
-                        self.print_post_details(json_file_path)
+        # for root, dirs, files in os.walk(profile_dir):
+        #     for file in files:
+        #         if file.endswith(".json"):
+        #             json_file_path = os.path.join(root, file)
+        #             connection = self.print_post_details(json_file_path)
+        #             if connection:
+        #                 connections.append(connection)
 
+    def process_directory_for_tagged_users(self, profile_directory):
+        for root, dirs, files in os.walk(profile_directory):
+            for file in files:
+                if file.endswith('.json'):
+                    json_file_path = os.path.join(root, file)
+                    self.print_post_details(json_file_path)
 
-    def print_post_details(json_file_path):
+    def print_post_details(self, json_file_path):
         try:
-            with open(json_file_path, 'r') as file:
-                post_data = json.load(file)
-            full_name = post_data.get('full_name', 'N/A')
-            username = post_data.get('username', 'N/A')
-            print(f"Full Name: {full_name}, Username: {username}")
+            with open(json_file_path, 'r', encoding='utf-8') as file:
+                data = json.load(file)
+            
+            # Navigate to the correct location based on the new structure
+            if 'node' in data and 'edge_media_to_tagged_user' in data['node']:
+                edges = data['node']['edge_media_to_tagged_user'].get('edges', [])
+            else:
+                print(f"'edge_media_to_tagged_user' not found in {json_file_path}. Here's what's available at node level: {list(data.get('node', {}).keys())}")
+                return
+            
+            if not edges:
+                print(f"No tagged users found in {json_file_path}.")
+                return
+            
+            print(f"Tagged users (and Possible Connections) in {json_file_path}:")
+            for edge in edges:
+                user_info = edge.get('node', {}).get('user', {})
+                full_name = user_info.get('full_name', 'N/A')
+                username = user_info.get('username', 'N/A')
+                print(f"  Full Name: {full_name}, Username: {username}")
+    
+        except FileNotFoundError:
+            print(f"{json_file_path} not found.")
+        except json.JSONDecodeError:
+            print(f"Error decoding JSON from {json_file_path}.")
         except Exception as e:
             print(f"Error processing {json_file_path}: {e}")
 
@@ -108,12 +133,11 @@ class SocialShield:
                 print(f"Error processing {username}: {e}")
         return reports
 
-    def extract_xz_file(xz_file_path, output_path):
+    def extract_xz_file(self, xz_file_path, output_path):
         try:
-            with lzma.open(xz_file_path) as file:
-                file_content = file.read()
-            with open(output_path, 'wb') as output_file:
-                output_file.write(file_content)
+            with lzma.open(xz_file_path, 'rb') as f, open(output_path, 'wb') as fout:
+                file_content = f.read()
+                fout.write(file_content)
             print(f"Extracted {xz_file_path} to {output_path}")
         except FileNotFoundError:
             print(f"{xz_file_path} not found.")
@@ -178,8 +202,19 @@ class SocialShield:
         print("Remember, the key to maintaining privacy on social media is to share wisely. It's not just about what you share, but also who you share it with. Stay safe! :)")
 
 
+def display_ascii_art():
+    ascii_art = """
+      ____             _       _   ____  _     _      _     _ 
+     / ___|  ___   ___(_) __ _| | / ___|| |__ (_) ___| | __| |
+     \___ \ / _ \ / __| |/ _` | | \___ \| '_ \| |/ _ \ |/ _` |
+      ___) | (_) | (__| | (_| | |  ___) | | | | |  __/ | (_| |
+     |____/ \___/ \___|_|\__,_|_| |____/|_| |_|_|\___|_|\__,_|
+    """
+    print(ascii_art)
+
 # Usage example
 if __name__ == "__main__":
+    display_ascii_art()
     social_shield = SocialShield()
     chosen_platform = social_shield.choose_platform()
 
@@ -195,6 +230,7 @@ if __name__ == "__main__":
         # Enter the usernames of the Instagram profiles to be analyzed
         profile_name = input("Enter your Instagram profile name to analyze: ")
         social_shield.analyze_profile(profile_name)
+        social_shield.process_directory_for_tagged_users(os.path.join(os.getcwd(), profile_name))
 
     elif chosen_platform == 'Snapchat':
         snapchat_username = input("Enter your Snapchat username to analyze: ")
