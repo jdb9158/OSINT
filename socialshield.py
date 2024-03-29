@@ -59,9 +59,11 @@ class SocialShield:
     def analyze_profile(self, username):
         profile = instaloader.Profile.from_username(self.loader.context, username)
 
+        # Ensure the directory for the profile exists and download profile
         self.loader.download_profile(username, profile_pic_only=False)
 
         profile_dir = os.path.join(username)
+        self.process_exif(profile_dir)
         
         # Iterate over files in the profile directory
         for root, dirs, files in os.walk(profile_dir):
@@ -71,16 +73,23 @@ class SocialShield:
                     json_file_path = xz_file_path[:-3]  # Assuming the extension is .json.xz
                     self.extract_xz_file(xz_file_path, json_file_path)
 
-        # Initialize an empty list to hold possible connections/associates
-        # connections = []
+        self.process_exif(profile_dir)
 
-        # for root, dirs, files in os.walk(profile_dir):
-        #     for file in files:
-        #         if file.endswith(".json"):
-        #             json_file_path = os.path.join(root, file)
-        #             connection = self.print_post_details(json_file_path)
-        #             if connection:
-        #                 connections.append(connection)
+    def process_exif(self, dir):
+        for root, dirs, files in os.walk(dir):
+            for file in files:
+                if file.lower().endswith((".jpg", ".mp4")):
+                    file_path = os.path.join(root, file)
+                    self.extract_exif(file_path)
+
+    def extract_exif(self, image_path):
+        command = ['exiftool', image_path]
+        try:
+            result = subprocess.run(command, capture_output=True, text=True)
+            print(f"EXIF data for {image_path}:")
+            print(result.stdout)
+        except Exception as e:
+            print(f"Error extracting EXIF data from {image_path}: {e}")
 
     def process_directory_for_tagged_users(self, profile_directory):
         for root, dirs, files in os.walk(profile_directory):
