@@ -17,6 +17,7 @@ import subprocess
 import exiftool
 import instaloader
 
+# Only Instagram functionality as of right now
 class SocialShield:
     def __init__(self):
         self.loader = instaloader.Instaloader()
@@ -105,13 +106,11 @@ class SocialShield:
             # Navigate to the correct location based on the new structure
             if 'node' in data and 'edge_media_to_tagged_user' in data['node']:
                 edges = data['node']['edge_media_to_tagged_user'].get('edges', [])
+                if not edges:
+                    return
             else:
-                print(f"'edge_media_to_tagged_user' not found in {json_file_path}. Here's what's available at node level: {list(data.get('node', {}).keys())}")
-                return
+                pass
             
-            if not edges:
-                print(f"No tagged users found in {json_file_path}.")
-                return
             
             print(f"Tagged users (and Possible Connections) in {json_file_path}:")
             for edge in edges:
@@ -126,6 +125,27 @@ class SocialShield:
             print(f"Error decoding JSON from {json_file_path}.")
         except Exception as e:
             print(f"Error processing {json_file_path}: {e}")
+
+        self.print_insta_tips()
+
+    def print_insta_tips(self):
+        print("\n[Privacy Tips for Instagram Users]\n")
+        
+        tips = [
+            "1. Make your account private to limit visibility.",
+            "2. Avoid revealing personal details in your bio or username.",
+            "3. Be cautious of background details that could reveal your location.",
+            "4. Regularly review your friend list and update privacy settings as features change.",
+            "5. Adjust privacy settings for activity status, stories, and tagged posts.",
+            "6. Avoid sharing posts that reveal routines or frequent locations.",
+            "7. Use blocking and reporting tools for harassment or inappropriate behavior.",
+            "8. Beware of unsolicited messages or requests, which could be social engineering tactics."
+        ]
+
+        for tip in tips:
+            print(f"• {tip}\n")
+        
+        print("Remember, the key to maintaining privacy on social media is to share wisely. It's not just about what you share, but also who you share it with. Stay safe! :)")
 
     def scan_profiles(self, usernames):
         reports = []
@@ -188,20 +208,19 @@ class SocialShield:
         finally:
             # Change back to the original working directory
             os.chdir(original_cwd)
-        self.print_privacy_tips()
+        self.print_snap_tips()
 
-    def print_privacy_tips(self):
+    def print_snap_tips(self):
         print("\n[Privacy Tips for Snapchat Users]\n")
         
         tips = [
-            "Avoid sharing your full name or initials in your Snapchat username or display name. This can make it harder for unwanted parties to identify or track you.",
-            "Be cautious about listing your birthday, especially the year. Sharing your age can increase the risk of identity theft or other forms of social engineering.",
-            "Consider keeping your account private. A public account can expose your snaps and stories to a broader audience than intended, increasing your digital footprint.",
-            "Be mindful of the background in your snaps. Unintentionally captured details (like street signs, house numbers, or identifiable landmarks) can reveal your location.",
-            "Regularly review your friend list and privacy settings. Snapchat updates its features and settings, so it's a good practice to ensure your privacy preferences are up-to-date.",
-            "Think twice before sharing snaps that could reveal routines or habits. Information about your daily activities can be pieced together over time to predict your movements.",
-            "Use the blocking and reporting features to manage who can see your content and interact with you. Snapchat allows you to block users who you do not wish to share information with or who behave inappropriately.",
-            "Educate yourself on the latest social engineering tactics. Scammers and hackers often use social media to gather personal information for fraudulent purposes."
+            "1. Avoid revealing personal details like full name, initials, or birth year in your username or display name.",
+            "2. Consider keeping your account private to limit exposure of your snaps and stories.",
+            "3. Be cautious of unintentionally capturing identifying details like addresses or landmarks in snap backgrounds.",
+            "4. Regularly review your friend list and update privacy settings as features change.",
+            "5. Avoid sharing snaps that reveal daily routines or habits, as this information can be used to predict your movements.",
+            "6. Use the blocking and reporting features to manage who can see your content and interact with you.",
+            "7. Stay informed about social engineering tactics used by scammers and hackers to gather personal information.",
         ]
         
         for tip in tips:
