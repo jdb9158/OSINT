@@ -14,10 +14,9 @@ import os
 import lzma
 import json
 import subprocess
-#import exiftool
+import exiftool
 import instaloader
 
-# Only Instagram functionality as of right now
 class SocialShield:
     def __init__(self):
         self.loader = instaloader.Instaloader()
