@@ -17,7 +17,6 @@ import subprocess
 import exiftool
 import instaloader
 
-# Only Instagram functionality as of right now
 class SocialShield:
     def __init__(self):
         self.loader = instaloader.Instaloader()
@@ -31,7 +30,6 @@ class SocialShield:
             self.loader = instaloader.Instaloader()
             return 'Instagram'
         elif choice == '2':
-            # Initialize Snapchat scraping setup here (if available)
             return 'Snapchat'
         else:
             print("Invalid choice. Please enter 1 or 2.")
