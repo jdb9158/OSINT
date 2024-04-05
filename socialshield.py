@@ -14,7 +14,6 @@ import os
 import lzma
 import json
 import subprocess
-import exiftool
 import instaloader
 
 class SocialShield:
