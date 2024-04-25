@@ -11,8 +11,36 @@ Run the following command in your terminal to install the necessary Python libra
 
 ```bash
 pip install instaloader lzma subprocess
+```
 
-# How to run Social Shield
+##### External Tools
+You'll also need to install the following tools:
+
+ExifTool: A platform-independent Perl library plus a command-line application for reading, writing, and editing meta information in a wide variety of files.
+SnapIntel: A tool specifically designed for extracting information from Snapchat.
+
+For ExifTool, installation can vary based on your operating system:
+
+For macOS:
+```bash
+brew install exiftool
+```
+
+For Ubuntu:
+```bash
+sudo apt-get install libimage-exiftool-perl
+```
+
+For Windows:
+Download and install from ExifTool's official website: https://exiftool.org/
+
+For SnapIntel, clone the repository from GitHub:
+```bash
+git clone https://github.com/Kr0wZ/SnapIntel.git
+```
+
+###### Running SocialShield
 To run the program, navigate to the directory containing socialshield.py and execute the following command:
 ```bash
 python3 socialshield.py
+```
