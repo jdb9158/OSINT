@@ -1,4 +1,4 @@
-# SocialShield
+# Social Shield
 Social Shield is a Social Media Vulnerability Scanner that can analyze profiles from Instagram and Snapchat, revealing potential privacy risks and providing tailored privacy tips.
 
 ## Getting Started
