@@ -36,7 +36,7 @@ Download and install from ExifTool's official website: https://exiftool.org/
 
 For SnapIntel, clone the repository from GitHub:
 ```bash
-git clone https://github.com/Kr0wZ/SnapIntel.git
+git clone https://github.com/Kr0wZ/SnapIntel
 ```
 
 ### Running Social Shield
