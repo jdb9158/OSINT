@@ -22,8 +22,8 @@ pip install instaloader lzma subprocess
 #### External Tools
 You'll also need to install the following tools:
 
-ExifTool: A platform-independent Perl library plus a command-line application for reading, writing, and editing meta information in a wide variety of files.
-SnapIntel: A tool specifically designed for extracting information from Snapchat.
+ExifTool:
+- A platform-independent Perl library plus a command-line application for reading, writing, and editing meta information in a wide variety of files.
 
 ##### For ExifTool, installation can vary based on your operating system:
 
@@ -40,7 +40,10 @@ sudo apt-get install libimage-exiftool-perl
 ###### For Windows:
 Download and install from ExifTool's official website: https://exiftool.org/
 
-For SnapIntel, clone the repository from GitHub:
+SnapIntel:
+- Python command line tool that is used to list and download a user’s stories, curated highlights, spotlights, and more.
+
+##### For SnapIntel, clone the repository from GitHub:
 ```bash
 git clone https://github.com/Kr0wZ/SnapIntel
 ```
