@@ -1,6 +1,12 @@
 # Social Shield
 Social Shield is a Social Media Vulnerability Scanner that can analyze profiles from Instagram and Snapchat, revealing potential privacy risks and providing tailored privacy tips.
 
+## Features
+- Login functionality for Instagram with support for two-factor authentication.
+- Extract and analyze EXIF data from downloaded media.
+- Detailed privacy tips for both Instagram and Snapchat users.
+- Ability to scan multiple profiles and summarize potential vulnerabilities.
+
 ## Getting Started
 
 ### Prerequisites
